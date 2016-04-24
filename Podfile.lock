@@ -1,0 +1,47 @@
+PODS:
+  - AFNetworking (2.5.2):
+    - AFNetworking/NSURLConnection (= 2.5.2)
+    - AFNetworking/NSURLSession (= 2.5.2)
+    - AFNetworking/Reachability (= 2.5.2)
+    - AFNetworking/Security (= 2.5.2)
+    - AFNetworking/Serialization (= 2.5.2)
+    - AFNetworking/UIKit (= 2.5.2)
+  - AFNetworking/NSURLConnection (2.5.2):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/NSURLSession (2.5.2):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (2.5.2)
+  - AFNetworking/Security (2.5.2)
+  - AFNetworking/Serialization (2.5.2)
+  - AFNetworking/UIKit (2.5.2):
+    - AFNetworking/NSURLConnection
+    - AFNetworking/NSURLSession
+  - IQKeyboardManager (3.2.1.2)
+  - MJRefresh (0.0.1)
+  - Reachability (3.0.0)
+  - SDWebImage (3.7.2):
+    - SDWebImage/Core (= 3.7.2)
+  - SDWebImage/Core (3.7.2)
+  - UMengSocial (4.4)
+
+DEPENDENCIES:
+  - AFNetworking (~> 2.5.1)
+  - IQKeyboardManager (~> 3.2.1.1)
+  - MJRefresh (~> 0.0.1)
+  - Reachability (~> 3.0.0)
+  - SDWebimage (~> 3.7.1)
+  - UMengSocial (~> 4.3)
+
+SPEC CHECKSUMS:
+  AFNetworking: fefbce9660acb17f48ae0011292d4da0f457bf36
+  IQKeyboardManager: 4adcd7cc9c17440a7cb74755f6f6c8389919c6bf
+  MJRefresh: 3ca90d4639e787c7b61432d84905f16de05d81b2
+  Reachability: 31e4272bd8378e094beaf6609dc182c85c4e6574
+  SDWebImage: 71b7cdc1d1721d6a82ed62889030225f2c249e29
+  UMengSocial: aba7296602310385114d82c255539a7bef3b7ab0
+
+COCOAPODS: 0.35.0

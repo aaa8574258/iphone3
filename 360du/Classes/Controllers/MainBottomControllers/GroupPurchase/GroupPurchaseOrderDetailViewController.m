@@ -1,0 +1,501 @@
+//
+//  GroupPurchaseOrderDetailViewController.m
+//  360du
+//
+//  Created by linghang on 15/12/25.
+//  Copyright © 2015年 wangjian. All rights reserved.
+//
+
+#import "GroupPurchaseOrderDetailViewController.h"
+#import "GroupOrderDeatilModel.h"
+#import "AFNetworkTwoPackaging.h"
+#import "StoreageMessage.h"
+#import "AddressModel.h"
+#import "UIView+Toast.h"
+#import "AlipayViewController.h"
+#import "CommitOrderViewController.h"
+#import "BuyFoodCarCell.h"
+#import "UIImageView+WebCache.h"
+#import "WeChantViewViewController.h"
+//#import "BuyFoodCarCell.h"
+//#import "FileOperation.h"
+//#import "CommitOrderViewController.h"
+//#import "FoodMerchatListModel.h"
+//#import "RemarkSendFoodViewController.h"
+
+//#import "NSString+URLEncoding.h"
+//#import "PaymentPrevilage.h"
+//#import "DebitCompanyOrPersonalViewController.h"
+//#import "AlipayViewController.h"
+//#import "GiveFoodTimeListModel.h"
+//#import "TranlateTime.h"
+//#import "MerchantDiscountViewController.h"
+//#import "GoodsPrivilegeViewController.h"
+#define BUYFOOFCARCELL @"buyFoodCarCell"
+@interface GroupPurchaseOrderDetailViewController ()<UITableViewDataSource,UITableViewDelegate>
+@property(nonatomic,weak)GroupOrderDeatilModel *model;
+@property(nonatomic,strong)NSMutableArray *dataArr;
+@property(nonatomic,weak)UITableView *tableView;
+@property(nonatomic,strong)NSMutableArray *addressListArr;//地址数组
+@property(nonatomic,strong)UIButton *payPreBtn;//付款前一个btn
+@property(nonatomic,weak)UILabel *priceLab;//价格
+@property(nonatomic,assign)NSInteger selectPay;//选择付款方式，0，为选择支付宝（默认），1，为微信
+
+
+@end
+
+@implementation GroupPurchaseOrderDetailViewController
+- (id)initWithModel:(GroupOrderDeatilModel *)model{
+    self = [super init];
+    if (self) {
+        self.selectPay = 0;
+        self.model = model;
+        [self makeInit];
+        [self makeNav];
+        [self loadData];
+        [self loadAddress];
+        [self makeUI];
+    }
+    return self;
+}
+- (void)makeInit{
+    self.dataArr = [NSMutableArray arrayWithCapacity:0];
+    //self.typeSliderArr = [NSMutableArray arrayWithCapacity:0];
+    //self.previlageArr = [NSMutableArray arrayWithCapacity:0];
+    self.addressListArr = [NSMutableArray arrayWithArray:0];
+    //self.timeListArr = [NSMutableArray arrayWithCapacity:0];
+}
+-(void)makeNav{
+    [self setNavBarImage:@"landi.png"];
+    //[self setBackgroud:@"lantiao x.png"];
+    [self setBackImageStateName:@"fanhuijian02.png" AndHighlightedName:@""];
+    
+    
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
+    //view.backgroundColor = MAINVIEWNAVBARCOLOR;
+    //[self.view addSubview:view];
+    
+    UILabel *lable = [[UILabel alloc] initWithFrame:CGRectZero];
+    lable.text = @"订单详情";
+    lable.font = [UIFont systemFontOfSize:16 * self.numSingleVesion];
+    lable.textColor = [UIColor whiteColor];
+    [lable sizeToFit];
+    lable.frame = CGRectMake(5 * self.numSingleVesion, 0 + (44 - 15) / 2, lable.frame.size.width, 15);
+    [view addSubview:lable];
+    view.frame = CGRectMake(0, 0, lable.frame.size.width, 44);
+    //UIBarButtonItem *centerBar = [[UIBarButtonItem alloc] initWithCustomView:view];
+    self.navigationItem.titleView = view;
+}
+-(void)loadData{
+    
+    [self.dataArr addObject:@[@"新增地址"]];
+    [self.dataArr addObject:@[@"支付宝支付",@"微信支付"]];
+    //[self.rlidArr addObject:@{@"rlid":rlid,@"count":[NSString stringWithFormat:@"%ld",count],@"descName":foodName,@"ItemModel":model}];
+    [self.dataArr addObject:@[self.model]];
+    
+    
+}
+- (void)loadAddress{
+    //#define ADDRESSLIST MAININTERFACE@"serviceServlet?serviceName=MyAccountXmlGenerator&medthodName=addressJson&MemberID=%@&gotoPage=%ld&pageSize=%ld"
+    
+    AFNetworkTwoPackaging *twoPacking = [[AFNetworkTwoPackaging alloc] init];
+    [twoPacking getUrl:[NSString stringWithFormat:ADDRESSLIST,[StoreageMessage getMessage][2],(long)1,(long)5] andFinishBlock:^(id getResult) {
+        if ([getResult[@"code"] isEqualToString:@"000001"]) {
+            return ;
+        }else{
+            for (NSInteger i = 0;i < [getResult[@"datas"] count];i++) {
+                AddressModel *model = [[AddressModel alloc] initWithDictionary:getResult[@"datas"][i]];
+                if ([model.isDefault isEqual:@"Y"]) {
+                    [self.dataArr replaceObjectAtIndex:0 withObject:@[model]];
+                }
+                [self.addressListArr addObject:model];
+            }
+            [self.tableView reloadData];
+        }
+        
+    }];
+}
+-(void)makeUI{
+    [self makeTable];
+    [self makeBottom];
+}
+-(void)makeTable{
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, WIDTH_CONTROLLER, HEIGHT_CONTROLLER - 64 - 49 * self.numSingleVesion) style:UITableViewStylePlain];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    [self.view addSubview:tableView];
+    //[tableView registerClass:[BuyFoodCarCell class] forCellReuseIdentifier:BUYFOOFCARCELL];
+    tableView.showsVerticalScrollIndicator = NO;
+    // tableView.separatorStyle = NO;
+    self.tableView = tableView;
+    tableView.tableFooterView = [[UIView alloc] init];
+}
+-(void)makeBottom{
+    UIView *leftView = [[UIView alloc] initWithFrame:CGRectMake(0, HEIGHT_CONTROLLER - 49 * self.numSingleVesion, WIDTH_CONTROLLER / 4 * 3, 49 * self.numSingleVesion)];
+    leftView.backgroundColor = SMSColor(55, 50, 51);;
+    [self.view addSubview:leftView];
+    
+  
+    //价格
+    UILabel *priceLab = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 15 * self.numSingleVesion)];
+    priceLab.text = [NSString stringWithFormat:@"共:%@元",self.model.totalPrice];
+    [leftView addSubview:priceLab];
+    priceLab.font = [UIFont systemFontOfSize:15];
+    priceLab.textColor = [UIColor whiteColor];
+    [priceLab sizeToFit];
+    priceLab.center = CGPointMake(WIDTH_CONTROLLER / 4 * 3 - 5 * self.numSingleVesion - priceLab.frame.size.width, 24.5 * self.numSingleVesion);
+    self.priceLab = priceLab;
+    //右边确认下单
+    //    UIView *rightView = [[UIView alloc] initWithFrame:CGRectMake(WIDTH_CONTROLLER / 4 * 3, HEIGHT_CONTROLLER - 49 * self.numSingleVesion, WIDTH_CONTROLLER / 2, 49 * self.numSingleVesion)];
+    //    rightView.backgroundColor = [UIColor redColor];
+    //    [self.view addSubview:rightView];
+    UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightBtn.frame = CGRectMake(WIDTH_CONTROLLER / 4 * 3, HEIGHT_CONTROLLER - 49 * self.numSingleVesion, WIDTH_CONTROLLER / 4, 49 * self.numSingleVesion);
+    rightBtn.backgroundColor = [UIColor redColor];
+    [rightBtn setTitle:@"确认下单" forState:UIControlStateNormal];
+    [rightBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    rightBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    [rightBtn addTarget:self action:@selector(rightBtnDown:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:rightBtn];
+}
+//确认下单
+-(void)rightBtnDown:(UIButton *)rightBtn{
+   
+//    PaymentPrevilage *preModel =  self.previlageArr[self.payPreBtn.tag - 1610];
+//    if ([preModel.Payname isEqual:@"微信支付"]) {
+//        [self.view makeToast:@"暂时不支持微信支付，请选择另一种支付方式"];
+//        return;
+//    }
+    [self makeHUd];
+    
+    AFHTTPRequestOperationManager *_rom = [AFHTTPRequestOperationManager manager];
+    _rom.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/json",@"text/html",@"application/json",nil];
+    _rom.requestSerializer = [[AFHTTPRequestSerializer alloc] init];
+    _rom.responseSerializer = [[AFHTTPResponseSerializer alloc] init];
+    NSString *addressId = [(AddressModel*)self.dataArr[0][0] ID];
+    NSString *url = [NSString stringWithFormat:GROUPSUNMITORDER,[StoreageMessage getMessage][2],self.model.cpid,addressId];
+    [_rom GET: url parameters:nil  success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [self hudWasHidden:self.hudProgress];
+        
+        NSString *tempStr = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+        NSData *data = [tempStr dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+        if ([dict[@"code"] isEqual:@"000000"]) {
+            [self.view makeToast:@"下单成功!"];
+            if (!self.payPreBtn) {
+                [self.view makeToast:@"请选择付款方式"];
+                return ;
+            }else if (self.payPreBtn.tag == 1601){
+                [WeChantViewViewController payName:self.model.cpname andMoney:[NSString stringWithFormat:@"%0.2f",[self.model.totalPrice floatValue] * 100 ] ];
+            }else{
+                AlipayViewController *aliPay = [[AlipayViewController alloc] initPrice:[NSString stringWithFormat:@"%0.2f",[self.model.totalPrice floatValue]] andDescMerchant:self.model.cpname andTitle:self.model.cpname andMerOrder:dict[@"orderId"]];
+                [self.navigationController pushViewController:aliPay animated:YES];
+                
+
+            }
+        }else{
+            [self.view makeToast:@"由于网络原因,下单失败,请重新下单!"];
+            return ;
+        }
+        
+        
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        //[[NSURLCache sharedURLCache] removeAllCachedResponses];
+        [self hudWasHidden:self.hudProgress];
+        NSLog(@"%@",[error description]);
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"警告" message:@"网络不流畅，请换个网络试试" delegate:self cancelButtonTitle:nil otherButtonTitles:@"确认", nil];
+        [alertView show];
+        return ;
+    }];
+    
+    //    AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+    //    //"serviceServlet?serviceName=UGoshoppingcar&medthodName=userorder&memberID=%@&did=%@&SendEndDate=%@&addressID=%@&PaymentType=%@"
+    //    //3.货到付款，1，支付宝，2，微信支付
+    //    [twoPack getUrl:[NSString stringWithFormat:CONFIRMORDER,[StoreageMessage getMessage][2],self.merchantId,@"15:30",@"京瑞大厦",@"3"] andFinishBlock:^(id getResult) {
+    //        NSLog(@"getResult:%@",[NSString stringWithFormat:CONFIRMORDER,[StoreageMessage getMessage][2],self.merchantId,@"15:30",@"京瑞大厦",@"3"]);
+    //        NSLog(@"result:%@",getResult);
+    //    }];
+    //CommitOrderViewController *commitOrder = [[CommitOrderViewController alloc] initWithAddressArr:self.addressArr];
+    //[self.navigationController pushViewController:commitOrder animated:YES];
+    
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    // Do any additional setup after loading the view.
+}
+#pragma mark tableView的协议代理
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return [self.dataArr[section] count];
+}
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:BUYFOOFCARCELL];
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:BUYFOOFCARCELL];
+    }
+   //[cell.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+//    //[cell init];
+     //[cell initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:BUYFOOFCARCELL];
+    
+    // [cell.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    //[cell init];
+    if (indexPath.section == 1) {
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    if (indexPath.row == 0 && indexPath.section == 0) {
+        
+    }else{
+    }
+    
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        if ([self.dataArr[indexPath.section][indexPath.row] isEqual:@"新增地址"]) {
+            cell.textLabel.text = self.dataArr[indexPath.section][indexPath.row];
+        }else{
+            AddressModel *model = self.dataArr[indexPath.section][indexPath.row];
+            cell.textLabel.text = [NSString stringWithFormat:@"%@ %@ %@",model.name,model.sex,model.phone];
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"地址:%@",model.address];
+            cell.detailTextLabel.textColor = [UIColor blackColor];
+            cell.detailTextLabel.font = [UIFont systemFontOfSize:13];
+        }
+        cell.textLabel.textColor = [UIColor blackColor];
+        
+        
+    }
+    if (indexPath.section == 1) {
+        //        for (NSInteger i = 0; i < 3; i++) {
+        //            UIButton *payBtn = (UIButton *)[cell.contentView viewWithTag:1610 + i];
+        //            [payBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+        //        }
+        cell.textLabel.text = self.dataArr[indexPath.section][indexPath.row];
+        NSString *tempStr = @"网上支付,快捷方便";
+        if(indexPath.row == 1){
+            tempStr = @"微信扫一扫,快捷又方便";
+        }
+        cell.detailTextLabel.text = tempStr;
+        cell.detailTextLabel.textColor = [UIColor redColor];
+        cell.detailTextLabel.font = [UIFont systemFontOfSize:13];
+        UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        rightBtn.frame = CGRectMake(WIDTH_CONTROLLER - 40 * self.numSingleVesion, 5 * self.numSingleVesion, 25 * self.numSingleVesion, 25 * self.numSingleVesion);
+        rightBtn.center = CGPointMake(WIDTH_CONTROLLER - 15 * self.numSingleVesion - 12.5 * self.numSingleVesion, 30 * self.numSingleVesion);
+        [rightBtn addTarget:self action:@selector(payment:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.contentView addSubview:rightBtn];
+        rightBtn.tag = 1600  + indexPath.row ;
+        [rightBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+
+        if (indexPath.row == self.selectPay) {
+            [rightBtn setImage:[UIImage imageNamed:@"确认"] forState:UIControlStateNormal];
+            self.payPreBtn = rightBtn;
+        }
+        
+        //self.foodCarCell = cell;
+        //        if (self.payType == indexPath.row) {
+        //            [rightBtn setImage:[UIImage imageNamed:@"确认"] forState:UIControlStateNormal];
+        //        }else{
+        //            [rightBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+        //        }
+    }else if (indexPath.section == 2){
+        cell.backgroundColor = SMSColor(221, 221, 221);
+        [self makeSectionLayout:cell];
+    }
+
+    //    if(indexPath.row % 2 == 0){
+    //        cell.detailTextLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
+    //    }else{
+    //
+    //    }
+    
+    return cell;
+}
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return self.dataArr.count;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    if (section == 0) {
+        return 0;
+    }else{
+        
+        return 30 * self.numSingleVesion;
+    }
+}
+
+//-(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{
+//
+//        return 30 * self.numSingleVesion;
+//}
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    if (section == 0 || section == 2) {
+        return nil;
+    }
+    UILabel *tempLab = [[UILabel alloc] initWithFrame:CGRectZero];
+    tempLab.text = @"支付方式";
+    tempLab.textColor = SMSColor(191, 191, 191);
+    tempLab.font = [UIFont systemFontOfSize:14];
+    [tempLab sizeToFit];
+    tempLab.backgroundColor = SMSColor(246, 246, 246);
+    tempLab.center = CGPointMake(10 * self.numSingleVesion + tempLab.frame.size.width / 2, 15 * self.numSingleVesion);
+    return tempLab;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.section == 0) {
+        return 60 * self.numSingleVesion;
+    }else if (indexPath.section == 2){
+        return 150 * self.numSingleVesion;
+    }
+    return 60 * self.numSingleVesion;
+}
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    //选择优惠方式
+    if (indexPath.section == 1) {
+//        for (NSInteger i = 0; i < 2; i++) {
+//            UIButton *tempBtn = (UIButton *)[self.view viewWithTag:1600 + i];
+//            [tempBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+//            
+//        }
+        [self.payPreBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+        UIButton *tempBtn = (UIButton *)[tableView viewWithTag:1600 + indexPath.row];
+        [tempBtn setImage:[UIImage imageNamed:@"确认"] forState:UIControlStateNormal];
+        self.payPreBtn = tempBtn;
+        self.selectPay = indexPath.row;
+       // [self.tableView reloadData];
+        if(indexPath.row == 0){
+            
+        }else if (indexPath.row == 1){
+            
+        }else{
+            
+        }
+    }
+    
+   
+    if (indexPath.section == 0 && indexPath.row == 0){
+        CommitOrderViewController *commitOrder = [[CommitOrderViewController alloc] initWithAddressArr:self.addressListArr];
+        commitOrder.target = self;
+        [self.navigationController pushViewController:commitOrder animated:YES];
+        
+    }
+}
+//加载优惠方式
+-(void)payment:(UIButton *)paymentBtn{
+    for (NSInteger i = 0; i < 2; i++) {
+        UIButton *tempBtn = (UIButton *)[self.view viewWithTag:1600 + i];
+        [tempBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+        
+    }
+    [self.payPreBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+    [paymentBtn setImage:[UIImage imageNamed:@"确认"] forState:UIControlStateNormal];
+    self.payPreBtn = paymentBtn;
+    
+    self.selectPay = paymentBtn.tag - 1600;
+   // [self.tableView reloadData];
+    //    if (self.previlageArr.count == 0) {
+    //        //[self.view makeToast:@"正在加载优惠方式,"]
+    //        [self makeHUd];
+    //        return;
+    //    }
+    //0.微信支付1，支付宝支付
+//    for (NSInteger i = 0; i < 2; i++) {
+//
+//    if (!self.payPreBtn) {
+//        self.payPreBtn = paymentBtn;
+//    }else{
+//        [self.payPreBtn setImage:[UIImage imageNamed:@"圆"] forState:UIControlStateNormal];
+//    }
+//    [paymentBtn setImage:[UIImage imageNamed:@"确认"] forState:UIControlStateNormal];
+//    self.payPreBtn = paymentBtn;
+//    
+//    }
+    
+}
+
+
+
+//获取默认地址
+- (void)gainDefaultAddress:(AddressModel *)model{
+    [self.dataArr replaceObjectAtIndex:0 withObject:@[model]];
+    [self cahngeAddress:model];
+    [self.tableView reloadData];
+}
+//更换默认地址
+- (void)cahngeAddress:(AddressModel *)model{
+    AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+#define DEFAULTADDRESS MAININTERFACE@"serviceServlet?serviceName=MyAccountXmlGenerator&medthodName=addressSetIsDefault&memberID=%@&addressId=%@&isDefault=Y"
+    
+    [twoPack getUrl:[NSString stringWithFormat:DEFAULTADDRESS,[StoreageMessage getMessage][2],model.ID] andFinishBlock:^(id getResult) {
+        
+    }];
+}
+- (void)makeSectionLayout:(UITableViewCell *)cell{
+    CGFloat height = 10 * self.numSingleVesion;
+    
+    //图片
+    UIImageView *leftImg = [[UIImageView alloc] initWithFrame:CGRectMake(10 * self.numSingleVesion, 30 * self.numSingleVesion, 80 * self.numSingleVesion, 80 * self.numSingleVesion)];
+    [cell.contentView addSubview:leftImg];
+    [leftImg sd_setImageWithURL:[NSURL URLWithString:self.model.cppicture]];
+    height = 70 * self.numSingleVesion;
+    //名字
+    NSArray *textArr = @[self.model.cpname,[NSString stringWithFormat:@"种类:%@",self.model.cpname]];
+    for (NSInteger i = 0; i < 2; i++) {
+        UILabel *nameLable = [[UILabel alloc] initWithFrame:CGRectMake(100 * self.numSingleVesion, 20 * self.numSingleVesion + 50 * i, WIDTH_CONTENTVIEW - 130 * self.numSingleVesion, 40 * self.numSingleVesion)];
+        nameLable.text = textArr[i];
+        if (i == 0) {
+            nameLable.font = [UIFont systemFontOfSize:15];
+            nameLable.textColor = SMSColor(51, 51, 51);
+        }else{
+            nameLable.font = [UIFont systemFontOfSize:13];
+            nameLable.textColor = SMSColor(151, 151, 151);
+        }
+        
+        nameLable.numberOfLines= 2;
+        [cell.contentView addSubview:nameLable];
+
+    }
+    NSArray *priceArr = @[[NSString stringWithFormat:@"￥%@",self.model.pprice],[NSString stringWithFormat:@"￥%@",self.model.mprice],[NSString stringWithFormat:@"x%@",self.model.preCount]];
+    NSArray *colorArr = @[SMSColor(51, 51, 51),SMSColor(151, 151, 151),SMSColor(151, 151, 151)];
+    
+    for (NSInteger i = 0; i < 3; i++) {
+        UILabel *beforeMoneyLable = [[UILabel alloc] initWithFrame:CGRectZero];
+        beforeMoneyLable.textColor = colorArr[i];
+        beforeMoneyLable.text = priceArr[i];
+        
+        beforeMoneyLable.font = [UIFont systemFontOfSize:14];
+        [cell.contentView addSubview:beforeMoneyLable];
+        [beforeMoneyLable sizeToFit];
+        beforeMoneyLable.frame = CGRectMake(WIDTH_CONTROLLER - beforeMoneyLable.frame.size.width - 5 * self.numSingleVesion, 25 * self.numSingleVesion + 30 * self.numSingleVesion * i, beforeMoneyLable.frame.size.width, 15 * self.numSingleVesion);
+        if (i == 1) {
+            UILabel *lineMoney = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 1 * self.numSingleVesion)];
+            lineMoney.backgroundColor = SMSColor(121,121,121);
+            //lineMoney.backgroundColor = [UIColor redColor];
+            //self.lineMoney.font = [UIFont systemFontOfSize:18];
+            [cell.contentView addSubview:lineMoney];
+            lineMoney.frame =  CGRectMake(WIDTH_CONTROLLER - beforeMoneyLable.frame.size.width - 5 * self.numSingleVesion, 25 * self.numSingleVesion + 30 * self.numSingleVesion * i + 7.5 * self.numSingleVesion, beforeMoneyLable.frame.size.width, 1 * self.numSingleVesion);
+        }
+    }
+    //截止时间
+    UILabel *timeLab = [[UILabel alloc] initWithFrame:CGRectMake(10 * self.numSingleVesion, 120 * self.numSingleVesion, WIDTH_CONTROLLER - 20 * self.numSingleVesion, 15 * self.numSingleVesion)];
+    timeLab.textColor = SMSColor(151, 151, 151);
+    timeLab.text = [NSString stringWithFormat:@"截止时间:%@",self.model.stopTime];
+    
+    timeLab.font = [UIFont systemFontOfSize:15];
+    [cell.contentView addSubview:timeLab];
+    
+    
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,156 @@
+//
+//  MenberOrderViewController.m
+//  360du
+//
+//  Created by linghang on 15/7/18.
+//  Copyright (c) 2015年 wangjian. All rights reserved.
+//
+
+#import "MenberOrderViewController.h"
+#import "OrderCell.h"
+#import "OrderModel.h"
+#import "AFNetworkTwoPackaging.h"
+#import "MJRefresh.h"
+#import "StoreageMessage.h"
+#import "OrderDeatilViewController.h"
+#define ORDERCELL @"orderCell"
+@interface MenberOrderViewController ()<UITableViewDataSource,UITableViewDelegate>
+@property(nonatomic,strong)NSMutableArray *dataArr;
+@property(nonatomic,weak)UITableView *tableView;
+@property(nonatomic,assign)NSInteger page;
+@property(nonatomic,assign)NSInteger size;
+@end
+
+@implementation MenberOrderViewController
+-(id)init{
+    self = [super init];
+    if (self) {
+        self.page = 1;
+        self.size = 5;
+        self.dataArr = [NSMutableArray arrayWithCapacity:0];
+        //[self makeNav];
+        [self loadData];
+
+        [self makeTable];
+    }
+    return self;
+}
+-(void)viewWillAppear:(BOOL)animated{
+    [self makeNav];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+            //[self makeNav];
+    // Do any additional setup after loading the view.
+}
+-(void)makeNav{
+    [self setNavBarImage:@"landi.png"];
+    //[self setBackgroud:@"lantiao x.png"];
+    [self setBackImageStateName:@"fanhuijian02.png" AndHighlightedName:@""];
+    
+    [self setNavTitleItemWithName:@"订单"];
+    
+
+}
+-(void)loadData{
+    [self makeHUd];
+    self.page = 1;
+    AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+    [twoPack getUrl:[NSString stringWithFormat:ORDER,[StoreageMessage getMessage][2],self.page,self.size] andFinishBlock:^(id getResult) {
+        [self hudWasHidden:self.hudProgress];
+        [self.tableView headerEndRefreshing];
+        [self.dataArr removeAllObjects];
+        for (NSDictionary *temp in getResult[@"datas"]) {
+            OrderModel *model = [[OrderModel alloc] initWithDictionary:temp];
+            [self.dataArr addObject:model];
+        }
+        [self.tableView reloadData];
+    }];
+//    [self hudWasHidden:self.hudProgress];
+}
+-(void)makeTable{
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, WIDTH_CONTROLLER, HEIGHT_CONTROLLER - 64) style:UITableViewStylePlain];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    [self.view addSubview:tableView];
+    [tableView registerClass:[OrderCell class] forCellReuseIdentifier:ORDERCELL];
+    tableView.showsVerticalScrollIndicator = NO;
+    self.tableView = tableView;
+    [self.tableView addFooterWithTarget:self action:@selector(addFooter)];
+    self.tableView.footerPullToRefreshText = @"上拉可以加载更多数据了";
+    self.tableView.footerReleaseToRefreshText = @"松开马上加载更多数据";
+    self.tableView.footerRefreshingText = @"正在加载，请稍后";
+}
+- (void)addFooter
+{
+    
+    self.page++;
+    __unsafe_unretained typeof(self) vc = self;
+    // 添加上拉刷新尾部控件
+    [self.tableView addFooterWithCallback:^{
+        // 进入刷新状态就会回调这个Block
+
+        AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+        [twoPack getUrl:[NSString stringWithFormat:ORDER,[StoreageMessage getMessage][2],self.page,self.size] andFinishBlock:^(id getResult) {
+            [vc.tableView footerEndRefreshing];
+            for (NSDictionary *temp in getResult[@"datas"]) {
+                OrderModel *model = [[OrderModel alloc] initWithDictionary:temp];
+                [vc.dataArr addObject:model];
+            }
+            [vc.tableView reloadData];
+        }];
+    }];
+}
+#pragma mark tableview的协议代理
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.dataArr.count;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 80 * self.numSingleVesion;
+}
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    OrderCell *cell = [tableView dequeueReusableCellWithIdentifier:ORDERCELL forIndexPath:indexPath];
+    OrderModel *model = self.dataArr[indexPath.row];
+    [cell refreshModel:model];
+    
+    return cell;
+}
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    OrderModel *model = self.dataArr[indexPath.row];
+    OrderDeatilViewController *orderDeatil = [[OrderDeatilViewController alloc] initWithOrderId:model.orderID andNavTitle:model.shopname];
+    orderDeatil.stateName = model.zwOrderStatus;
+    orderDeatil.merchantId = model.did;
+    orderDeatil.starCount = model.pingjia;
+    orderDeatil.finalPrice = model.payMoney;
+    orderDeatil.personalName = model.Name;
+    [self.navigationController pushViewController:orderDeatil animated:YES];
+}
+-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    if (scrollView.contentOffset.y < -50) {
+        [self.tableView headerBeginRefreshing];
+        self.tableView.headerRefreshingText = @"正在刷新";
+        //loadData
+        //[self.dataArr removeAllObjects];
+        [self.tableView addHeaderWithTarget:self action:@selector(loadData)];
+    }
+    if (scrollView.contentOffset.y > scrollView.contentSize.height + 50) {
+        //[self.tableView ]
+    }
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

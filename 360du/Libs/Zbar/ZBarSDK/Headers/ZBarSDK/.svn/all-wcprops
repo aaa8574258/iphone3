@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK
+END
+ZBarHelpController.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarHelpController.h
+END
+ZBarImageScanner.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarImageScanner.h
+END
+ZBarReaderView.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarReaderView.h
+END
+zbar.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/zbar.h
+END
+ZBarReaderViewController.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarReaderViewController.h
+END
+ZBarSDK.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarSDK.h
+END
+ZBarImage.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarImage.h
+END
+ZBarSymbol.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarSymbol.h
+END
+ZBarCaptureReader.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarCaptureReader.h
+END
+ZBarReaderController.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarReaderController.h
+END
+ZBarCameraSimulator.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/ios/!svn/ver/101/xiaomi/XiaomiIOs/Libs/Zbar/ZBarSDK/Headers/ZBarSDK/ZBarCameraSimulator.h
+END

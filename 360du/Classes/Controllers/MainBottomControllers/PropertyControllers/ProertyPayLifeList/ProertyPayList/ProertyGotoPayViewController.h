@@ -1,0 +1,13 @@
+//
+//  ProertyGotoPayViewController.h
+//  360du
+//
+//  Created by linghang on 16/3/14.
+//  Copyright © 2016年 wangjian. All rights reserved.
+//
+
+#import "BaseViewController.h"
+
+@interface ProertyGotoPayViewController : BaseViewController
+
+@end

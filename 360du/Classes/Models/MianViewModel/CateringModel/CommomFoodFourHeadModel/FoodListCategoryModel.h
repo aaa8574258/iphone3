@@ -1,0 +1,16 @@
+//
+//  FoodListCategoryModel.h
+//  360du
+//
+//  Created by linghang on 15/5/17.
+//  Copyright (c) 2015年 wangjian. All rights reserved.
+//
+
+#import "BaseModel.h"
+
+@interface FoodListCategoryModel : BaseModel
+@property(nonatomic,copy)NSString *pid;
+@property(nonatomic,copy)NSString *imgrul;
+@property(nonatomic,copy)NSString *name;
+@end
+

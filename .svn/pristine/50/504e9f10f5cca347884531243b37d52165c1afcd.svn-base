@@ -1,0 +1,11 @@
+platform:ios
+pod'Reachability','~>3.0.0'
+platform:ios,'8.1'
+pod'AFNetworking','~>2.5.1'
+platform:ios,'8.1'
+pod'MJRefresh','~>0.0.1'
+platform:ios,'8.1'
+pod'SDWebimage','~>3.7.1'
+platform:ios,'8.1'
+pod'IQKeyboardManager','~>3.2.1.1'
+pod 'UMengSocial', '~> 4.3'

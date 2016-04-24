@@ -1,0 +1,193 @@
+//
+//  ParkingMangerViewController.m
+//  360du
+//
+//  Created by linghang on 16/1/7.
+//  Copyright © 2016年 wangjian. All rights reserved.
+//
+
+#import "ParkingMangerViewController.h"
+#import "ParkingCarBottomView.h"
+#import "AFNetworkTwoPackaging.h"
+#import "StoreageMessage.h"
+#import "NSString+URLEncoding.h"
+#import "UIView+Toast.h"
+#import "ParkingQueryModel.h"
+#import "ParkingMineDetailViewController.h"
+@interface ParkingMangerViewController ()
+@property(nonatomic,strong)ParkingCarBottomView *carBottomView;
+@property(nonatomic,strong)NSMutableArray *storeCarArr;
+@property(nonatomic,assign)CGFloat everCarWidth;
+@property(nonatomic,assign)CGFloat everCarHidth;
+@property(nonatomic,strong)NSMutableString *mutStr;
+@property(nonatomic,strong)ParkingQueryModel *queryModel;
+@end
+
+@implementation ParkingMangerViewController
+- (id)init{
+    self = [super init];
+    if (self) {
+        self.mutStr = [NSMutableString stringWithCapacity:0];
+        self.storeCarArr = [NSMutableArray arrayWithCapacity:0];
+        [self createNav];
+        [self createCarView];
+        [self createBottomView];
+    }
+    return self;
+}
+- (void)createNav{
+    [self setNavBarImage:@"landi.png"];
+    //[self setBackgroud:@"lantiao x.png"];
+    [self setBackImageStateName:@"fanhuijian02.png" AndHighlightedName:@""];
+    
+    [self setNavTitleItemWithName:@"车牌管理"];
+}
+- (void)createCarView{
+    //输入车牌信息
+    CGFloat height = 64 + 20 * self.numSingleVesion;
+    UILabel *carLab = [[UILabel alloc] initWithFrame:CGRectZero];
+    carLab.text = @"输入车牌信息";
+    carLab.font = [UIFont systemFontOfSize:18];
+    [self.view addSubview:carLab];
+    carLab.textColor = SMSColor(148, 152, 162);
+    [carLab sizeToFit];
+    carLab.center = CGPointMake(WIDTH_CONTROLLER / 2, height + 10 * self.numSingleVesion);
+    height += 50 * self.numSingleVesion;
+    //输入车牌信息
+    CGFloat everWidth = (WIDTH_CONTROLLER - 50 * self.numSingleVesion) / 7;
+    self.everCarWidth = everWidth;
+    self.everCarHidth = height;
+    for (NSInteger i = 0; i < 7; i++) {
+        UILabel *carInfoLab = [[UILabel alloc] initWithFrame:CGRectMake(25 * self.numSingleVesion + everWidth * i, height, everWidth, everWidth)];
+        carInfoLab.layer.borderWidth = 1 * self.numSingleVesion;
+        carInfoLab.layer.borderColor = [SMSColor(167, 167, 167) CGColor];
+        carInfoLab.font = [UIFont systemFontOfSize:16];
+        carInfoLab.textColor = SMSColor(51, 51, 51);
+        [self.view addSubview:carInfoLab];
+        carInfoLab.tag = 2200 + i;
+        carInfoLab.textAlignment = NSTextAlignmentCenter;
+
+        
+    }
+    height += everWidth;
+    height += 30 * self.numSingleVesion;
+    //输入车牌信息查询
+    UIButton *queryBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    queryBtn.frame = CGRectMake(10 * self.numSingleVesion, height, WIDTH_CONTROLLER - 20 * self.numSingleVesion, 50 * self.numSingleVesion);
+    [queryBtn setTitle:@"查询车牌号" forState:UIControlStateNormal];
+    [queryBtn setBackgroundColor:[UIColor redColor]];
+    [queryBtn addTarget:self action:@selector(queryBtnDown) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:queryBtn];
+    [queryBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    queryBtn.titleLabel.font = [UIFont systemFontOfSize:14];
+}
+- (void)queryBtnDown{
+    //serviceServlet?serviceName=CarPark&medthodName=
+    //getPayFeeCard&c_Pai=京H88888&xqID=86420010000004
+    if (self.storeCarArr.count != 6) {
+        [self.view makeToast:@"请填写车牌号"];
+    }else{
+        UILabel *carLab = (UILabel *)[self.view viewWithTag:2200];
+        [self.mutStr appendString:carLab.text];
+        for (id temp in self.storeCarArr) {
+            [self.mutStr appendString:temp];
+        }
+        [self makeHUd];
+        AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+        NSString *url = [NSString stringWithFormat:PARKINGQUERY,[[self.mutStr urlEncodeString] urlEncodeString],[StoreageMessage getCommuntityId]];
+        [twoPack getUrl:url andFinishBlock:^(id getResult) {
+            [self hudWasHidden:self.hudProgress];
+            if (![getResult[@"code"] isEqual:@"000000"]) {
+                [self.view makeToast:getResult[@"message"]];
+            }else{
+                self.queryModel = [[ParkingQueryModel alloc] initWithDictionary:getResult[@"datas"]];
+                ParkingMineDetailViewController *mineDetail = [[ParkingMineDetailViewController alloc] initWithModel:self.queryModel];
+                [self.navigationController pushViewController:mineDetail animated:YES];
+            }
+        }];
+    }
+}
+- (void)createBottomView{
+    [self createFirstView];
+    //[self createSecondView];
+}
+#pragma mark 下边是创建车牌bottom的View
+- (void)createFirstView{
+    NSArray *tempArr = @[@"京",@"津",@"冀",@"鲁",@"晋",@"蒙",@"辽",@"吉",@"黑",@"沪",@"苏",@"浙",@"皖",@"闽",@"赣",@"豫",@"鄂",@"湘",@"粤",@"桂",@"渝",@"川",@"贵",@"云",@"藏",@"陕",@"甘",@"青",@"琼",@"新",@"港",@"澳",@"台",@"宁"];
+    CGFloat everWidth = WIDTH_VIEW / (CGFloat)9;
+    self.carBottomView = [[ParkingCarBottomView alloc] initWithFrame:CGRectMake(0, HEIGHT_CONTROLLER - everWidth  * 4, WIDTH_VIEW, everWidth * 4) andCarArr:tempArr andBottomState:0];
+    self.carBottomView.target = self;
+    [self.view addSubview:self.carBottomView];
+}
+- (void)createSecondView{
+    NSArray *tempArr = @[@"0",@"1",@"2",@"3",@"4",@"5",@"6",@"7",@"8",@"9",@"Q",@"W",@"E",@"R",@"T",@"Y",@"U",@"I",@"O",@"P",@"A",@"S",@"D",@"F",@"G",@"H",@"J",@"K",@"L",@"Z",@"X",@"C",@"V",@"B",@"N",@"M",@"jianpan_delete.png"];
+    CGFloat firstWidth = WIDTH_VIEW / (CGFloat)10;
+    CGFloat firstHeight = firstWidth;
+    CGFloat secondWidth = WIDTH_VIEW / (CGFloat)9;
+    CGFloat secondHeight = secondWidth;
+    self.carBottomView = [[ParkingCarBottomView alloc] initWithFrame:CGRectMake(0, HEIGHT_CONTROLLER - firstWidth  * 3 - secondHeight, WIDTH_VIEW,  (firstWidth  * 3 + secondHeight)) andCarArr:tempArr andBottomState:1];
+    self.carBottomView.target = self;
+    [self.view addSubview:self.carBottomView];
+}
+- (void)removeBottomView{
+    [self.carBottomView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [self.carBottomView removeFromSuperview];
+    self.carBottomView = nil;
+}
+//返回车牌信息
+- (void)returnCarContent:(NSString *)content andState:(NSInteger)state andTag:(NSInteger)tag{
+    if (state == 0) {
+        [self removeBottomView];
+        [self createSecondView];
+        UILabel *carLab = (UILabel *)[self.view viewWithTag:2200];
+        carLab.text = content;
+        
+
+    }else {
+        //tag为1，是删除，为0 则是添加内容
+        if (tag == 1) {
+            [self.storeCarArr removeLastObject];
+
+            if (self.storeCarArr.count == 0) {
+                [self removeBottomView];
+                [self createFirstView];
+            }
+            
+        }else{
+            if (self.storeCarArr.count == 6) {
+                return;
+            }
+            [self.storeCarArr addObject:content];
+        }
+        for (NSInteger i = 0; i < 6; i++) {
+            UILabel *carLab = (UILabel *)[self.view viewWithTag:2201 + i];
+            carLab.text = @"";
+            if (i < self.storeCarArr.count) {
+                carLab.text = self.storeCarArr[i];
+
+
+            }
+        }
+    }
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

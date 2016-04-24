@@ -1,0 +1,472 @@
+//
+//  CommonBusinessListCollectionViewCell.m
+//  360du
+//
+//  Created by linghang on 15/7/3.
+//  Copyright (c) 2015年 wangjian. All rights reserved.
+//
+
+#import "CommonBusinessListCollectionViewCell.h"
+#import "UIFontShareInstance.h"
+#import "VersionTranlate.h"
+#import "FoodMerchatListModel.h"
+#import "CommonFoodMerchatListCell.h"
+#import "MerchantDeatilModel.h"
+#import "UIImageView+WebCache.h"
+#import "CommonEvaluteCell.h"
+#import "FoodBussinessListCollectionViewController.h"
+#import "CommonEvaluateModel.h"
+#import "ComplexMethod.h"
+#import "CommonEvaluateMechantCell.h"
+#import "MJRefresh.h"
+#import "UIScrollView+MJRefresh.h"
+#import "MJRefreshHeaderView.h"
+#import "MJRefreshBaseView.h"
+#define FOODMERCHATLISTCELL @"foodMerchChatListCell"
+#define EVALUATECELL @"evaluateCell"
+#define MECHANTDEATILCELL @"mechantDeatilCell"
+@interface CommonBusinessListCollectionViewCell(){
+    MJRefreshHeaderView *_header;
+    MJRefreshBaseView *_baseView;
+    
+}
+@property(nonatomic,weak)UITableView *evealuateTableView;
+@property(nonatomic,weak)UITableView *merchDeatilTableView;
+
+@property(nonatomic,strong)NSMutableArray *evalateArr;
+@property(nonatomic,strong)NSMutableArray *merchTableArr;
+@property(nonatomic,assign)NSInteger page;
+@property(nonatomic,assign)NSInteger size;
+@end
+@implementation CommonBusinessListCollectionViewCell
+-(id)initWithFrame:(CGRect)frame{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.page = 1;
+        UIFontShareInstance *shareIn = [UIFontShareInstance shareInstance];
+        self.allWidth = shareIn.width;
+        self.numSingleVesion = [VersionTranlate returnVersionRateAnyIphone:self.allWidth];
+    }
+    return self;
+}
+-(void)makeUINum:(NSInteger)num{
+    switch (num) {
+        case 0:{
+            [self makeCommonMerch];
+            break;
+        }
+        case 1:{
+            
+            [self makeMerchantBusiness];
+            break;
+        }
+        case 2:{
+            [self makeEvanluate];
+            break;
+        }
+        default:
+            break;
+    }
+}
+//商品
+-(void)makeCommonMerch{
+    [self makeScoreView];
+    [self makeTableView];
+}
+//左边滑动
+-(void)makeScoreView{
+    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 100 * self.numSingleVesion, HEIGHT_CONTENTVIEW)];
+    scrollView.contentSize = CGSizeMake(100 * self.numSingleVesion, 39 * self.numSingleVesion * self.sectionArr.count);
+    //scrollView.backgroundColor = [UIColor redColor];
+    [self.contentView addSubview:scrollView];
+    //self.scrollView = scrollView;
+    scrollView.showsVerticalScrollIndicator = NO;
+    for (NSInteger i = 0; i < self.sectionArr.count; i++) {
+        UIButton *scrBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        scrBtn.frame = CGRectMake(0, 39 * self.numSingleVesion * i, 100 * self.numSingleVesion, 39 * self.numSingleVesion);
+        FoodMerchatListModel *model = self.sectionArr[i];
+        [scrBtn setTitle:model.catalog forState:UIControlStateNormal];
+        [scrBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [scrBtn addTarget:self action:@selector(scrBtnDown:) forControlEvents:UIControlEventTouchUpInside];
+        [scrollView addSubview:scrBtn];
+        scrBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+        scrBtn.titleLabel.font = [UIFont systemFontOfSize:14 * self.numSingleVesion];
+        scrBtn.tag = 1400 + i;
+        if (i == 0) {
+            [scrBtn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        }
+    }
+}
+-(void)scrBtnDown:(UIButton *)scrBtn{
+    for (NSInteger i = 0; i < self.sectionArr.count; i++) {
+        UIButton *btn = (UIButton *)[self viewWithTag:1400 + i];
+        [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    }
+    //[self.tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index];
+    [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:scrBtn.tag - 1400] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+    //    NSIndexPath *first = [NSIndexPath indexPathForRow:0 inSection:scrBtn.tag - 1400];
+    //    [self.tableView selectRowAtIndexPath:first animated:YES scrollPosition:UITableViewScrollPositionTop];
+    
+    //self.tableView.contentOffset = CGPointMake(0, (scrBtn.tag - 1400) * 119 * self.numSingleVesion);
+#warning message
+    NSLog(@"%f",self.tableView.contentOffset.y);
+    [scrBtn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+}
+//右边Table
+-(void)makeTableView{
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(100 * self.numSingleVesion, 0 , self.allWidth - 100 * self.numSingleVesion, HEIGHT_CONTENTVIEW - 49 * self.numSingleVesion - 64) style:UITableViewStylePlain];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    tableView.showsVerticalScrollIndicator = NO;
+    [tableView registerClass:[CommonFoodMerchatListCell class] forCellReuseIdentifier:FOODMERCHATLISTCELL];
+    [self.contentView addSubview:tableView];
+    self.tableView = tableView;
+    [self.tableView addFooterWithTarget:self action:@selector(addFooter)];
+    self.tableView.footerPullToRefreshText = @"上拉可以加载更多数据了";
+    self.tableView.footerReleaseToRefreshText = @"松开马上加载更多数据";
+}
+//评价
+-(void)makeEvanluate{
+    //self.contentView.backgroundColor = [UIColor purpleColor];
+    [self loadEauvlteModel];
+    [self evaluateTitle];
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 40 * self.numSingleVesion, WIDTH_CONTENTVIEW, HEIGHT_CONTENTVIEW  - 49 * self.numSingleVesion - 40 * self.numSingleVesion - 64) style:UITableViewStylePlain];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    [self.contentView addSubview:tableView];
+    self.evealuateTableView = tableView;
+    tableView.showsVerticalScrollIndicator = NO;
+    [tableView registerClass:[CommonEvaluteCell class] forCellReuseIdentifier:EVALUATECELL];
+
+}
+//评价数据Model
+- (void)loadEauvlteModel{
+    self.evalateArr = [NSMutableArray arrayWithCapacity:0];
+    if (self.evaluateDic[@"buzdata"] == nil) {
+        return;
+    }
+    for (NSInteger i = 0; i < [self.evaluateDic[@"buzdata"] count]; i++) {
+        CommonEvaluateModel *model = [[CommonEvaluateModel alloc] initWithDictionary:self.evaluateDic[@"buzdata"][i]];
+        [self.evalateArr addObject:model];
+    }
+}
+//评价介绍
+- (void)evaluateTitle{
+    UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
+    [self.contentView addSubview:view];
+    UILabel *serviceLab = [[UILabel alloc] initWithFrame:CGRectZero];
+    serviceLab.text = @"服务评价  ";
+    serviceLab.font = [UIFont systemFontOfSize:14];
+    [serviceLab sizeToFit];
+    serviceLab.textColor = [UIColor blackColor];
+    [view addSubview:serviceLab];
+    serviceLab.center = CGPointMake(serviceLab.frame.size.width / 2, 20 * self.numSingleVesion);
+    //星星图片
+    for (NSInteger i = 0; i < 5; i++) {
+        UIImageView *starImg = [[UIImageView alloc] initWithFrame:CGRectMake(serviceLab.frame.size.width + 15 * self.numSingleVesion * i,  5 * self.numSingleVesion, 15 * self.numSingleVesion, 15 * self.numSingleVesion)];
+        starImg.image = [UIImage imageNamed:@"xing03"];
+        [view addSubview:starImg];
+        starImg.center = CGPointMake(serviceLab.frame.size.width + 7.5 * self.numSingleVesion + 15 * self.numSingleVesion * i, 20 * self.numSingleVesion);
+    }
+    for (NSInteger i = 0; i < [self.evaluateDic[@"xjaverage"] integerValue]; i++) {
+        UIImageView *starFlImg = [[UIImageView alloc] initWithFrame:CGRectMake(serviceLab.frame.size.width + 15 * self.numSingleVesion * i,  5 * self.numSingleVesion, 15 * self.numSingleVesion, 15 * self.numSingleVesion)];
+        starFlImg.image = [UIImage imageNamed:@"xing02"];
+        [view addSubview:starFlImg];
+        starFlImg.center = CGPointMake(serviceLab.frame.size.width + 7.5 * self.numSingleVesion + 15 * self.numSingleVesion * i, 20 * self.numSingleVesion);
+
+    }
+    if ([self.evaluateDic[@"xjaverage"] floatValue] > [self.evaluateDic[@"xjaverage"] integerValue]) {
+        UIImageView *starFlImg = [[UIImageView alloc] initWithFrame:CGRectMake(serviceLab.frame.size.width + 15 * self.numSingleVesion * [self.evaluateDic[@"xjaverage"] integerValue],  5 * self.numSingleVesion, 15 * self.numSingleVesion, 15 * self.numSingleVesion)];
+        starFlImg.image = [UIImage imageNamed:@"xing01"];
+        [view addSubview:starFlImg];
+        starFlImg.center = CGPointMake(serviceLab.frame.size.width + 15 * self.numSingleVesion * [self.evaluateDic[@"xjaverage"] integerValue] + 7.5 * self.numSingleVesion, 20 * self.numSingleVesion);
+    }
+    UILabel *evalteLab = [[UILabel alloc] initWithFrame:CGRectZero];
+    NSString *evalteStr = [NSString stringWithFormat:@" %ld",[self.evaluateDic[@"xjaverage"] integerValue]];
+    evalteLab.text = evalteStr;
+    evalteLab.textColor = [UIColor redColor];
+    evalteLab.font = [UIFont systemFontOfSize:14];
+    [evalteLab sizeToFit];
+    [view addSubview:evalteLab];
+    evalteLab.center = CGPointMake(serviceLab.frame.size.width + 75 * self.numSingleVesion + evalteLab.frame.size.width / 2, 20 * self.numSingleVesion);
+    view.frame = CGRectMake(0, 64, serviceLab.frame.size.width + 75 * self.numSingleVesion + evalteLab.frame.size.width, 40 * self.numSingleVesion);
+    view.center = CGPointMake(WIDTH_CONTENTVIEW / 2, 20 * self.numSingleVesion);
+}
+//商家
+-(void)makeMerchantBusiness{
+    [self loadMerchantArr];
+    [self makeHeadImg];
+    [self makeMerchantDeatilTabview];
+}
+//加载数据
+- (void)loadMerchantArr{
+    self.merchTableArr = [NSMutableArray arrayWithCapacity:0];
+    //第一段
+    //self.detailModel.companyaddress
+    NSArray *firsetSectionArr = @[@[@"时间",@"10:00-22:00"],@[@"地点",self.detailModel.companyaddress],@[@"喇叭",@""]];
+    //第二段
+    NSMutableArray *secondSectionArr = [NSMutableArray arrayWithCapacity:0];
+    for (NSInteger i = 0; i < self.detailModel.yhdetail.count; i++) {
+        NSMutableArray *tempArr = [NSMutableArray arrayWithCapacity:0];
+        [tempArr addObject:[self.detailModel.yhdetail[i] objectForKey:@"imgurl"]];
+        [tempArr addObject:[self.detailModel.yhdetail[i] objectForKey:@"content"]];
+        [secondSectionArr addObject:tempArr];
+    }
+    [self.merchTableArr addObject:firsetSectionArr];
+    if (self.detailModel.yhdetail.count == 0) {
+        return;
+    }
+    [self.merchTableArr addObject:secondSectionArr];
+    
+}
+//照片
+-(void)makeHeadImg{
+    //商家底部
+    UIImageView *imgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, WIDTH_CONTENTVIEW, 150 * self.numSingleVesion)];
+    //imgView.backgroundColor = [UIColor brownColor];
+    imgView.image = [UIImage imageNamed:@"商家底图"];
+    [self.contentView addSubview:imgView];
+    //商家标志
+    UIImageView *cicrle = [[UIImageView alloc] initWithFrame:CGRectMake((self.allWidth - 30 * self.numSingleVesion) / 2, 20 * self.numSingleVesion, 60 * self.numSingleVesion, 60 * self.numSingleVesion)];
+    [cicrle sd_setImageWithURL:[NSURL URLWithString:self.detailModel.clientlogo] placeholderImage:[UIImage imageNamed:@"012"]];
+    [imgView addSubview:cicrle];
+    cicrle.layer.cornerRadius = 30 * self.numSingleVesion;
+    cicrle.clipsToBounds = YES;
+    cicrle.layer.borderWidth = 1 * self.numSingleVesion;
+    cicrle.layer.borderColor = [SMSColor(211, 211, 211) CGColor];
+    cicrle.center = CGPointMake(self.allWidth / 2, 45 * self.numSingleVesion);
+    //商家名称
+    UILabel *lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 80 * self.numSingleVesion, 15 * self.numSingleVesion)];
+    lable.font = [UIFont systemFontOfSize:16];
+    lable.textColor = [UIColor blackColor];
+    [imgView addSubview:lable];
+    lable.text = self.detailModel.shopname;
+    [lable sizeToFit];
+    lable.center = CGPointMake(self.allWidth / 2, 85 * self.numSingleVesion);
+    
+    //配送时间、价钱、配送价
+    NSArray *titleArr = @[@"平均送达时间",@"起送价",@"配送费"];
+    NSString *avgerTime = [NSString stringWithFormat:@"%@分钟",self.detailModel.sendtime];
+    NSString *startPrice = [NSString stringWithFormat:@"￥%@",self.detailModel.startSendPric];
+    NSString *sendPrice = [NSString stringWithFormat:@"￥%@",self.detailModel.sendPrice];
+    NSArray *numArr = @[avgerTime,startPrice,sendPrice];
+    CGFloat everWidth = WIDTH_CONTENTVIEW / 3;
+    for (NSInteger i = 0; i < titleArr.count; i++) {
+        UILabel *titleLab = [[UILabel alloc] initWithFrame:CGRectZero];
+        titleLab.font = [UIFont systemFontOfSize:14];
+        titleLab.textColor = [UIColor whiteColor];
+        titleLab.text = titleArr[i];
+        [imgView addSubview:titleLab];
+        [titleLab sizeToFit];
+        titleLab.center = CGPointMake(everWidth * i + everWidth / 2, 150 * self.numSingleVesion - 5 * self.numSingleVesion - 7.5 * self.numSingleVesion);
+        
+        UILabel *numLab = [[UILabel alloc] initWithFrame:CGRectZero];
+        numLab.font = [UIFont systemFontOfSize:14];
+        numLab.textColor = [UIColor whiteColor];
+        numLab.text = numArr[i];
+        [imgView addSubview:numLab];
+        [numLab sizeToFit];
+        numLab.center = CGPointMake(everWidth * i + everWidth / 2, 150 * self.numSingleVesion - 20 * self.numSingleVesion - 12.5 * self.numSingleVesion);
+        if (i < titleArr.count - 1) {
+            UILabel *lineLab = [[UILabel alloc] initWithFrame:CGRectMake(everWidth - 1 * self.numSingleVesion + everWidth * i, 150 * self.numSingleVesion - 30 * self.numSingleVesion, 1 * self.numSingleVesion, 28 * self.numSingleVesion)];
+            lineLab.backgroundColor = [UIColor whiteColor];
+            [imgView addSubview:lineLab];
+
+        }
+        
+        
+    }
+}
+//商家详情tableview
+- (void)makeMerchantDeatilTabview{
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 150 * self.numSingleVesion, WIDTH_CONTENTVIEW, HEIGHT_CONTENTVIEW  - 40 * self.numSingleVesion - 150 * self.numSingleVesion) style:UITableViewStylePlain];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    [self.contentView addSubview:tableView];
+    self.merchDeatilTableView = tableView;
+    tableView.showsVerticalScrollIndicator = NO;
+    [tableView registerClass:[CommonEvaluateMechantCell class] forCellReuseIdentifier:MECHANTDEATILCELL];
+}
+//tableView
+#pragma mark tableViewd的协议代理
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (tableView == self.evealuateTableView) {
+        return [self.evaluateDic[@"buzdata"] count];
+    }else if (tableView == self.merchDeatilTableView){
+        return [self.merchTableArr[section] count];
+    }
+    return [self.dataArr[section] count];
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (tableView == self.evealuateTableView) {
+        CommonEvaluateModel *model = self.evalateArr[indexPath.row];
+       CGFloat height = [ComplexMethod returnEverRowHeightStr:model.pingjia andWith:WIDTH_CONTENTVIEW - 60 * self.numSingleVesion andFont:14];
+        return 40 * self.numSingleVesion + height + 5 * self.numSingleVesion;
+    }else if (tableView == self.merchDeatilTableView){
+        NSString *tempStr = self.merchTableArr[indexPath.section][indexPath.row][1];
+        CGFloat height = [ComplexMethod returnEverRowHeightStr:tempStr andWith:WIDTH_CONTENTVIEW - 60 * self.numSingleVesion andFont:14];
+        if (height < 40 * self.numSingleVesion) {
+            return 40 * self.numSingleVesion;
+        }
+        return height + 10 * self.numSingleVesion;
+    }
+    return 80 * self.numSingleVesion;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    if (tableView == self.evealuateTableView) {
+        return 30 * self.numSingleVesion;
+    }else if (tableView == self.merchDeatilTableView){
+        if (section == 1) {
+            return 20;
+        }
+        return 0;
+    }
+    return 39 * self.numSingleVesion;
+}
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
+    if (tableView == self.evealuateTableView) {
+//        NSString *tempEva = [
+        return @"用户评价";
+    }else if (tableView == self.merchDeatilTableView){
+        return nil;
+    }
+    FoodMerchatListModel *model = self.sectionArr[section];
+    return model.catalog;
+}
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    if (tableView == self.evealuateTableView) {
+        return 1;
+    }else if(tableView == self.merchDeatilTableView){
+        return self.merchTableArr.count;
+    }
+    return self.sectionArr.count;
+}
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (tableView == self.evealuateTableView) {
+        CommonEvaluteCell *cell = [tableView dequeueReusableCellWithIdentifier:EVALUATECELL forIndexPath:indexPath];
+        cell.target = self;
+
+        CommonEvaluateModel *model = self.evalateArr[indexPath.row];
+        CGFloat height = [ComplexMethod returnEverRowHeightStr:model.pingjia andWith:WIDTH_CONTENTVIEW - 60 * self.numSingleVesion andFont:14];
+        cell.height = height;
+        [cell refreahEvaluateModel:model];
+        return cell;
+    }else if (tableView == self.merchDeatilTableView){
+        CommonEvaluateMechantCell *cell = [tableView dequeueReusableCellWithIdentifier:MECHANTDEATILCELL forIndexPath:indexPath];
+        CGFloat height = [ComplexMethod returnEverRowHeightStr:self.merchTableArr[indexPath.section][indexPath.row][1] andWith:WIDTH_CONTENTVIEW - 60 * self.numSingleVesion andFont:14];
+        [cell refreshArr:self.merchTableArr[indexPath.section][indexPath.row] andSection:indexPath.section andHeight:height];
+        return cell;
+
+    }
+    CommonFoodMerchatListCell *cell = [tableView dequeueReusableCellWithIdentifier:FOODMERCHATLISTCELL forIndexPath:indexPath];
+    cell.target = self;
+    FoodMerchatListItemModel *model = self.dataArr[indexPath.section][indexPath.row];
+    //cell.textLabel.text = model.name;
+    [cell refeshModel:model andNum:indexPath.row andSection:indexPath.section];
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    FoodMerchatListItemModel *model = self.dataArr[indexPath.section][indexPath.row];
+    FoodMerchatListModel *listModel = self.sectionArr[indexPath.section];
+    if ([self.target isKindOfClass:[FoodBussinessListCollectionViewController class]]) {
+        [self.target returnGoods:model andProcudeId:listModel.cid];
+    }
+}
+#pragma mark 滑动时，改变左边的按钮颜色
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    
+    UITableView *tableView = (UITableView *)scrollView;
+    //NSIndexPath path =
+    if ([self.tableView isEqual:tableView]) {
+        NSInteger num = [self displayLeftScrollViewColor:self.tableView.contentOffset.y];
+        for (NSInteger i = 0; i < self.sectionArr.count; i++) {
+            UIButton *btn = (UIButton *)[self viewWithTag:1400 + i];
+            [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        }
+        UIButton *scrBtn = (UIButton *)[self viewWithTag:1400 + num];
+        [scrBtn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        
+    }
+    
+}
+
+-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+    //    UITableView *tableView = (UITableView *)scrollView;
+    //    //NSIndexPath path =
+    //    if ([self.tableView isEqual:tableView]) {
+    //        NSInteger num = [self displayLeftScrollViewColor:self.tableView.contentOffset.y];
+    //        for (NSInteger i = 0; i < self.sectionArr.count; i++) {
+    //            UIButton *btn = (UIButton *)[self.view viewWithTag:1400 + i];
+    //            [btn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    //        }
+    //        UIButton *scrBtn = (UIButton *)[self.view viewWithTag:1400 + num];
+    //        [scrBtn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    //
+    //    }
+    
+#warning message
+    // NSLog(@"%ld",[self displayLeftScrollViewColor:<#(CGFloat)#>]);
+    
+#warning message
+    //NSLog(@"%@",self.tableView.indexPathForSelectedRow);
+    
+    //    self.tableView
+    //self.tableView sec
+}
+#pragma mark 根据右边tableView滚动显示左边的ScrollView
+-(NSInteger )displayLeftScrollViewColor:(CGFloat)contentSizeY{
+    NSMutableArray *numArr = [NSMutableArray arrayWithCapacity:0];
+    NSInteger returnRow = 0;
+    CGFloat height = 0;
+    for (NSInteger i = 0; i < self.sectionArr.count; i++) {
+        
+        if (contentSizeY <= height) {
+            returnRow = i;
+            return returnRow;
+        }
+        height += 39 * self.numSingleVesion;
+        height += 80 * self.numSingleVesion * [self.dataArr[i] count];
+        [numArr addObject:[NSString stringWithFormat:@"%f",height]];
+        
+    }
+    return returnRow;
+}
+#pragma mark 返回添加的数据
+-(void)returnAddBtn:(NSInteger)num andSection:(NSInteger)section andAddAndReduce:(NSString *)addAndReduce andCount:(NSString *)buyCount{
+    if ([self.target isKindOfClass:[FoodBussinessListCollectionViewController class]]) {
+        FoodMerchatListItemModel *model = self.dataArr[section][num];
+         [self.target returnBuyCar:model andAddAndReduce:addAndReduce andBuyCount:buyCount];
+    }
+}
+#pragma mark 下拉加载更多
+- (void)addFooter
+{
+    
+    self.page++;
+    __unsafe_unretained typeof(self) vc = self;
+    // 添加上拉刷新尾部控件
+    [self.tableView addFooterWithCallback:^{
+        // 进入刷新状态就会回调这个Block
+        
+        AFNetworkTwoPackaging *twoPack = [[AFNetworkTwoPackaging alloc] init];
+        [twoPack getUrl:[NSString stringWithFormat:MERCHANTEVALUATE,@"2",self.memchantId,self.page,self.size]andFinishBlock:^(id getResult) {
+            [vc.tableView footerEndRefreshing];
+            NSMutableArray *tempArr = [NSMutableArray arrayWithCapacity:0];
+            for (id temp in vc.dataArr) {
+                [tempArr addObject:temp];
+            }
+            for (id temp in getResult) {
+                [tempArr addObject:temp];
+            }
+            vc.dataArr = tempArr;
+            [vc.tableView reloadData];
+            if ([vc.target isKindOfClass:[FoodBussinessListCollectionViewController class]]) {
+                [vc.target returnCommentArr:tempArr];
+            }
+            //[self hudWasHidden:self.hudProgress];
+//            [self.dataArr replaceObjectAtIndex:num withObject:getResult];
+//            [self.collectionView reloadData];
+        }];
+    }];
+}
+@end
