@@ -1,0 +1,6 @@
+framework module Pods_360du {
+  umbrella header "Pods-360du-umbrella.h"
+
+  export *
+  module * { export * }
+}

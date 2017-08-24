@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 150
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers
+END
+TWTRCoreOAuthSigning.h
+K 25
+svn:wc:ra_dav:version-url
+V 173
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRCoreOAuthSigning.h
+END
+TwitterCore.h
+K 25
+svn:wc:ra_dav:version-url
+V 164
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TwitterCore.h
+END
+TWTRGuestSession.h
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRGuestSession.h
+END
+TWTRConstants.h
+K 25
+svn:wc:ra_dav:version-url
+V 166
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRConstants.h
+END
+TWTRAPIErrorCode.h
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRAPIErrorCode.h
+END
+TWTRAuthSession.h
+K 25
+svn:wc:ra_dav:version-url
+V 168
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRAuthSession.h
+END
+TWTRAuthConfig.h
+K 25
+svn:wc:ra_dav:version-url
+V 167
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Twitter/TwitterCore.framework/Headers/TWTRAuthConfig.h
+END

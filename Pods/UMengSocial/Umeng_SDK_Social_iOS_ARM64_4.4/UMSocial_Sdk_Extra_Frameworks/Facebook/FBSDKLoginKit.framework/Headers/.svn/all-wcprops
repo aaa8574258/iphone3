@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 153
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers
+END
+FBSDKLoginKit.h
+K 25
+svn:wc:ra_dav:version-url
+V 169
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginKit.h
+END
+FBSDKLoginManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 173
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManager.h
+END
+FBSDKLoginButton.h
+K 25
+svn:wc:ra_dav:version-url
+V 172
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginButton.h
+END
+FBSDKLoginConstants.h
+K 25
+svn:wc:ra_dav:version-url
+V 175
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginConstants.h
+END
+FBSDKTooltipView.h
+K 25
+svn:wc:ra_dav:version-url
+V 172
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKTooltipView.h
+END
+FBSDKLoginManagerLoginResult.h
+K 25
+svn:wc:ra_dav:version-url
+V 184
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManagerLoginResult.h
+END
+FBSDKLoginTooltipView.h
+K 25
+svn:wc:ra_dav:version-url
+V 177
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/UMengSocial/Umeng_SDK_Social_iOS_ARM64_4.4/UMSocial_Sdk_Extra_Frameworks/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginTooltipView.h
+END

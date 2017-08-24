@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage
+END
+Info.plist
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/Info.plist
+END
+SDWebImage.xcconfig
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/SDWebImage.xcconfig
+END
+SDWebImage.modulemap
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/SDWebImage.modulemap
+END
+SDWebImage-dummy.m
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/SDWebImage-dummy.m
+END
+SDWebImage-prefix.pch
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/SDWebImage-prefix.pch
+END
+SDWebImage-umbrella.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/360m/!svn/ver/6789/iphone/KKM/Pods/Target%20Support%20Files/SDWebImage/SDWebImage-umbrella.h
+END
